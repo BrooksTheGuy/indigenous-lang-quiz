@@ -11,4 +11,5 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 ENV PORT=8080
 EXPOSE 8080
-CMD ["sh","-c","java -Dserver.port=${PORT} -jar app.jar"]
+CMD ["sh","-c","java -Dserver.port=${PORT} -DRESET_USER=${RESET_USER} -DRESET_PASS=${RESET_PASS} -jar app.jar"]
+
