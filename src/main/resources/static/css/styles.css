@@ -1,0 +1,6 @@
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:2rem}
+.container{max-width:900px;margin:0 auto} nav a{margin-right:1rem}
+input,select,textarea{width:100%;padding:.6rem;margin:.4rem 0 1rem} button{padding:.6rem 1rem;cursor:pointer}
+.linklike{background:none;border:0;padding:0;color:#06c;text-decoration:underline;cursor:pointer}
+.alert{padding:.75rem;margin-top:1rem;border:1px solid #ddd;border-radius:8px}
+.alert.success{background:#f0fff4;border-color:#c6f6d5} .alert.error{background:#fff5f5;border-color:#fed7d7}

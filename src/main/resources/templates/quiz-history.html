@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Quiz History</title>
+    <style>
+        :root{--bg:#f8fafc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--head:#f1f5f9;--badge:#eef2ff;}
+        *{box-sizing:border-box}
+        body{margin:0;padding:24px;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+        .wrap{max-width:960px;margin:0 auto}
+        h1{margin:0 0 16px;font-size:28px}
+        a.home{display:inline-block;margin-bottom:16px;color:#2563eb;text-decoration:none}
+        a.home:hover{text-decoration:underline}
+        table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+        thead th{background:var(--head);text-align:left;font-weight:600;padding:12px}
+        tbody td{padding:12px;border-top:1px solid var(--line)}
+        .muted{color:var(--muted)}
+        .badge{background:var(--badge);padding:4px 8px;border-radius:999px;font-weight:600}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a class="home" th:href="@{/}">← Home</a>
+    <h1>Your Quiz History</h1>
+
+    <p class="muted" th:if="${#lists.isEmpty(attempts)}">
+        No attempts yet. Take a quiz to see your history here.
+    </p>
+
+    <table th:if="${!#lists.isEmpty(attempts)}" role="table">
+        <thead>
+        <tr>
+            <th style="width:26%">Date</th>
+            <th style="width:18%">Language</th>
+            <th style="width:20%">Score</th>
+            <th style="width:18%">Percent</th>
+            <th style="width:18%">Time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Show normal rows (skip any bad 0/0 rows) -->
+        <tr th:each="a : ${attempts}" th:if="${a.totalQuestions > 0}">
+            <td th:text="${#temporals.format(a.takenAt,'yyyy-MM-dd HH:mm')}"></td>
+            <td><span class="badge" th:text="${a.language}"></span></td>
+            <td th:text="${a.correct + ' / ' + a.totalQuestions}"></td>
+
+            <!-- Use the entity getter 'getPercent()' if you added it, else compute safely -->
+            <td th:text="${#numbers.formatDecimal(a.percent,1,1)} + '%'"
+                th:unless="${a.totalQuestions == 0}"></td>
+            <td th:if="${a.totalQuestions == 0}">0%</td>
+
+            <!-- Keep it simple: seconds (or upgrade later to mm:ss) -->
+            <td th:text="${a.elapsedSeconds + 's'}"></td>
+        </tr>
+
+        <!-- Optional: if you prefer to show even 0/0 rows, render them as 0% instead of NaN -->
+        <tr th:each="a : ${attempts}" th:if="${a.totalQuestions == 0}">
+            <td th:text="${#temporals.format(a.takenAt,'yyyy-MM-dd HH:mm')}"></td>
+            <td><span class="badge" th:text="${a.language}"></span></td>
+            <td>0 / 0</td>
+            <td>0%</td>
+            <td th:text="${a.elapsedSeconds + 's'}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

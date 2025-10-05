@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8" />
+
+    <title>Home | Indigenous Languages</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root { --card:#ffffff; --border:#e5e7eb; --bg:#f8fafc; }
+        body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:#0f172a; }
+        .container { max-width:1000px; margin:24px auto 40px; padding:0 16px; }
+        h1 { font-weight:800; margin-bottom:12px; }
+        p { line-height:1.5; color:#374151; }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-top:20px; }
+        .btn { display:inline-block; margin-top:12px; padding:10px 16px; border-radius:10px; border:1px solid var(--border); background:#111827; color:#fff; text-decoration:none; }
+        .btn:hover { background:#1f2937; }
+    </style>
+</head>
+<body>
+
+<!-- Shared navbar -->
+<div th:replace="fragments/nav :: navbar"></div>
+
+<div class="container">
+    <h1>Welcome to the Indigenous Language App</h1>
+    <p>
+        This platform helps you <strong>learn, translate, and practice</strong>
+        indigenous languages like Oshiwambo, Silozi, Rukwangali, and Herero.
+    </p>
+
+    <div class="card">
+        <h2>Start Translating</h2>
+        <p>Translate common words and phrases from English into indigenous languages.</p>
+        <a th:href="@{/translate}" class="btn">Go to Translation</a>
+    </div>
+
+    <div class="card">
+        <h2>Take a Quiz</h2>
+        <p>Test your knowledge of words and sentences with interactive quizzes.</p>
+        <a th:href="@{/quiz}" class="btn">Start Quiz</a>
+    </div>
+    <section sec:authorize="hasRole('ADMIN')">
+        <h2>Admin</h2>
+        <p>Manage users and translations.</p>
+        <a class="btn" href="/admin/dashboard">Admin dashboard</a>
+        <a class="btn" href="/admin/upload">Upload translations</a>
+    </section>
+
+</div>
+
+</body>
+</html>

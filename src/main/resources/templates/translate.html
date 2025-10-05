@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="'Translate English to ' + (${target?.display()} ?: '')">Translate</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <style>
+        :root { --card:#ffffff; --muted:#6b7280; --border:#e5e7eb; --bg:#f8fafc; }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:#0f172a; }
+        .container { max-width:1100px; margin:24px auto 40px; padding:0 16px; }
+        h1 { font-weight:800; letter-spacing:.2px; margin:16px 0; }
+
+        .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; min-height:360px; }
+        .header { display:flex; align-items:center; gap:8px; color:#111827; font-weight:700; margin-bottom:8px; }
+        .row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+        .chip { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); padding:8px 10px; border-radius:999px; background:#fff; }
+        .chip select { border:none; background:transparent; font:inherit; outline:none; }
+
+        textarea { width:100%; height:260px; border:none; outline:none; resize:none; font:inherit; color:#111827; }
+        textarea::placeholder { color:#9ca3af; }
+
+        .ghost { color:#9ca3af; }
+        .tools { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+        .icon-btn { border:none; background:transparent; cursor:pointer; font-size:18px; }
+        .translation { font-size:20px; color:#111827; min-height:240px; }
+        .note { font-size:12px; color:#9ca3af; margin-top:6px; }
+
+        @media (max-width: 900px) { .grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<!-- Shared navbar -->
+<div th:replace="fragments/nav :: navbar"></div>
+
+<div class="container">
+    <h1 th:text="'Translate English to ' + (${target?.display()} ?: '')">Translate</h1>
+
+    <div class="grid">
+        <!-- Left -->
+        <div class="card">
+            <div class="header"><span>🇬🇧</span> English (UK)</div>
+            <textarea id="sourceText" placeholder="Enter text"></textarea>
+            <div class="tools">
+                <span class="ghost" id="charCount">0</span>
+                <button class="icon-btn" id="speakBtn" title="Speak">🔊</button>
+            </div>
+        </div>
+
+        <!-- Right -->
+        <div class="card">
+            <div class="row">
+                <div class="chip">
+                    <span id="flagSpan" th:text="${target != null ? target.flag() : ''}"></span>
+
+                    <select id="targetSelect" name="target">
+                        <option th:each="lang : ${languages}"
+                                th:value="${lang.name()}"
+                        th:selected="${lang == target}"
+                        th:attr="data-flag=${lang.flag()}"
+                        th:text="${lang.display()}">
+                        </option>
+                    </select>
+
+
+
+                </div>
+            </div>
+
+            <div id="translation" class="translation">Translation</div>
+            <div id="note" class="note"></div>
+
+            <div class="tools">
+                <span class="ghost"></span>
+                <button class="icon-btn" id="copyBtn" title="Copy">📋</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sourceEl = document.getElementById('sourceText');
+    const targetSel = document.getElementById('targetSelect');
+    const translationEl = document.getElementById('translation');
+    const noteEl = document.getElementById('note');
+    const copyBtn = document.getElementById('copyBtn');
+    const speakBtn = document.getElementById('speakBtn');
+    const charCount = document.getElementById('charCount');
+
+    const api = (text, target) => `/api/translate?text=${encodeURIComponent(text)}&target=${encodeURIComponent(target)}`;
+
+    let debounceTimer = null;
+    function request() {
+      const text = sourceEl.value.trim();
+      charCount.textContent = text.length;
+      if (!text) { translationEl.textContent = 'Translation'; noteEl.textContent = ''; return; }
+      fetch(api(text, targetSel.value))
+        .then(r => r.json())
+        .then(({translation, note}) => {
+          translationEl.textContent = translation || '—';
+          noteEl.textContent = note || '';
+        })
+        .catch(() => { translationEl.textContent = 'Error contacting server.'; noteEl.textContent = ''; });
+    }
+
+    sourceEl.addEventListener('input', () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(request, 250); });
+    targetSel.addEventListener('change', () => {
+      request();
+      const label = targetSel.selectedOptions[0].textContent;
+      document.title = `Translate English to ${label}`;
+      document.querySelector('h1').textContent = `Translate English to ${label}`;
+    });
+    copyBtn.addEventListener('click', async () => { try { await navigator.clipboard.writeText(translationEl.textContent || ''); } catch {} });
+    speakBtn.addEventListener('click', () => {
+      const text = sourceEl.value.trim(); if (!text) return;
+      if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); window.speechSynthesis.speak(u); }
+    });
+
+    request();
+</script>
+</body>
+</html>

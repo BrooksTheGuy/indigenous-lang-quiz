@@ -1,0 +1,108 @@
+/* === Base layout === */
+body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#fafafa; color:#111827; }
+.container { max-width: 1024px; margin: 24px auto 40px; padding: 0 16px; }
+
+/* Top nav */
+.quiz-nav { margin-bottom: 6px; }
+.quiz-nav a { margin-right: 18px; color:#5b21b6; text-decoration: underline; }
+.linklike { color:#5b21b6; }
+
+/* Cards */
+.lang-card, .quiz-header, .quiz-main, .results {
+  background:#fff; border:1px solid #e5e7eb; border-radius: 16px; padding: 18px; margin-top: 16px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.02);
+}
+.hidden { display:none; }
+.divider { height: 6px; background: #e5e7eb; border-radius: 999px; margin: 8px 0 16px; }
+
+.badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #eef2ff; color: #374151; margin-left: 8px; }
+
+/* Headings */
+.quiz-title h1 { margin: 6px 0 0; font-size: 32px; font-weight: 800; color:#111827; }
+.results h1 { margin: 0 0 4px; font-size: 28px; font-weight: 800; }
+.results h2 { margin: 6px 0 12px; font-size: 24px; font-weight: 700; }
+
+/* Buttons */
+.btn--primary {
+  background: #111827; color: #fff; border: 1px solid #111827; border-radius: 10px; padding: 10px 16px; cursor: pointer;
+}
+.btn--secondary {
+  background: #ede9fe; color:#3730a3; border:1px solid #ddd6fe; border-radius: 10px; padding: 8px 14px; cursor: pointer;
+}
+.btn--default {
+  background: #34d399; color:#fff; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight:700;
+}
+.btn--primary:disabled { opacity:.5; cursor:not-allowed; }
+
+/* Language gate */
+.lang-card h2 { text-align:center; margin: 8px 0; color:#374151; font-weight:800; font-size:28px; }
+.lang-card .hint { text-align:center; color:#6b7280; margin-bottom: 12px; }
+.lang-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.lang-btn { font-weight: 700; }
+
+/* Quiz question & progress */
+.quiz-question { font-size: 24px; margin: 8px 0 12px; color:#111827; }
+.quiz-progress { height: 8px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background: #111827; }
+
+/* Choices */
+.choices { list-style:none; padding:0; margin:0; display:grid; gap: 12px; }
+.choice {
+  border-radius: 12px; border:1px solid #e5e7eb; padding: 12px 14px; cursor:pointer;
+  background:#d9f3f7; color:#111827; display:flex; justify-content:space-between; align-items:center;
+}
+.choice.correct { background:#d1fae5; }
+.choice.incorrect { background:#fee2e2; }
+.choice .hint { font-size:12px; opacity:.7; }
+
+/* Feedback alert */
+.alert { border-radius: 10px; padding: 10px 12px; margin-top:10px; border:1px solid #e5e7eb; }
+.alert.success { background:#ecfdf5; border-color:#a7f3d0; }
+.alert.error { background:#fef2f2; border-color:#fecaca; }
+
+/* Actions row */
+.actions { display:flex; gap:10px; align-items:center; margin-top:12px; }
+
+/* Results layout */
+.results .scorecard {
+  display:grid; grid-template-columns: 150px 1fr; gap: 16px; align-items:center; margin-top: 12px;
+}
+
+/* Circular score (more “ring” style like your screenshot) */
+.score-circle {
+  width: 132px; height: 132px; border-radius:50%;
+  background:
+    radial-gradient(closest-side, #fff 77%, transparent 78% 100%),
+    conic-gradient(#111827 var(--pct, 0%), #e5e7eb 0);
+  display:grid; place-items:center; font-size: 20px; color:#111827;
+  border:1px solid #e5e7eb;
+}
+
+/* Summary/advice card (top banner on results) */
+.summary-card {
+  display:grid; grid-template-columns: 64px 1fr; gap:14px; align-items:center;
+  padding:14px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; margin: 6px 0 14px;
+}
+.grade-pill {
+  width: 56px; height:56px; border-radius:50%; display:grid; place-items:center;
+  font-weight:800; color:#111827; background:#fee2e2; border:1px solid #fecaca;
+}
+.grade-pill.good { background:#dcfce7; border-color:#bbf7d0; }
+.summary-text p { margin:6px 0; color:#374151; }
+
+/* Highscores table */
+.results table { width:100%; border-collapse: collapse; margin-top: 12px; }
+.results thead th { font-weight:700; color:#111827; }
+.results th, .results td { text-align:left; padding:8px; border-bottom:1px solid #e5e7eb; }
+
+/* Review list */
+.review { margin-top:16px; }
+.review .ok { color:#16a34a; }
+.review .bad { color:#dc2626; }
+
+/* Small screens */
+@media (max-width: 720px) {
+  .lang-buttons { grid-template-columns: 1fr; }
+  .results .scorecard { grid-template-columns: 1fr; }
+  .score-circle { margin-bottom: 8px; }
+}

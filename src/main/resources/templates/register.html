@@ -1,0 +1,11 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head>
+<meta charset="utf-8"><title>Register</title><link rel="stylesheet" href="/css/styles.css"></head>
+<body><div class="container"><h2>Create Account</h2>
+<div th:if="${error}" class="alert error" th:text="${error}"></div>
+<div th:if="${success}" class="alert success" th:text="${success}"></div>
+<form th:action="@{/register}" th:object="${registerRequest}" method="post">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+<label>Email</label><input type="email" th:field="*{email}" placeholder="you@example.com">
+<label>Password</label><input type="password" th:field="*{password}" placeholder="********">
+<button type="submit">Register</button></form>
+<p><a href="/login">Back to login</a></p></div></body></html>

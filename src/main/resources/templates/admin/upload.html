@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8" />
+    <title>Upload Translations | Indigenous Languages</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root { --card:#ffffff; --muted:#6b7280; --border:#e5e7eb; --bg:#f8fafc; }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:#0f172a; }
+        .container { max-width:900px; margin:24px auto 40px; padding:0 16px; }
+        h1 { font-weight:800; margin:12px 0 8px; letter-spacing:.2px; }
+        .muted { color:var(--muted); }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; }
+        .row { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
+        @media (max-width: 900px) { .row { grid-template-columns:1fr; } }
+
+        .dropzone {
+          border:2px dashed var(--border);
+          border-radius:14px;
+          padding:26px;
+          text-align:center;
+          background:#fff;
+          transition: .15s ease-in-out;
+        }
+        .dropzone.drag { border-color:#111827; background:#f9fafb; }
+        .dz-note { font-size:12px; color:var(--muted); margin-top:8px; }
+
+        .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#111827; color:#fff; text-decoration:none; }
+        .btn[disabled] { opacity:.5; cursor:not-allowed; }
+        .btn.outline { background:#fff; color:#111827; }
+        .spacer { height:12px; }
+
+        .table { width:100%; border-collapse:separate; border-spacing:0; }
+        .table th, .table td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); }
+        .table th { font-weight:700; color:#111827; background:#f3f4f6; }
+        code { background:#f3f4f6; padding:2px 6px; border-radius:6px; }
+    </style>
+</head>
+<body>
+
+<!-- Shared navbar -->
+<div th:replace="fragments/nav :: navbar"></div>
+
+<section class="container" sec:authorize="hasRole('ADMIN')">
+    <h1>Upload translations</h1>
+    <p class="muted">Upload a CSV to insert or update translations. You can re-upload the same keys to fix typos or notes.</p>
+
+    <div class="row">
+        <!-- Upload card -->
+        <div class="card">
+            <form th:action="@{/admin/upload}" method="post" enctype="multipart/form-data" id="uploadForm">
+                <div id="dz" class="dropzone" tabindex="0">
+                    <strong>Drag & drop</strong> your CSV here<br/>
+                    <span class="muted">or</span><br/>
+                    <label for="file" class="btn outline" style="margin-top:10px; cursor:pointer;">Choose file</label>
+                    <input id="file" name="file" type="file" accept=".csv" style="display:none;" />
+                    <div class="dz-note" id="fileName">No file selected</div>
+                </div>
+
+                <div class="spacer"></div>
+
+                <label class="muted" for="note">Optional note (why this upload?)</label>
+                <textarea id="note" name="note" rows="3" style="width:100%; border:1px solid var(--border); border-radius:12px; padding:10px; font:inherit;"></textarea>
+
+                <div class="spacer"></div>
+                <button class="btn" type="submit" id="submitBtn" disabled>Upload CSV</button>
+            </form>
+        </div>
+
+        <!-- Help / template -->
+        <div class="card">
+            <h3 style="margin:0 0 10px;">CSV format</h3>
+            <p class="muted" style="margin-top:0;">Use the header row exactly as shown. Extra columns are ignored.</p>
+            <table class="table">
+                <thead>
+                <tr><th>Column</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>language</code></td><td>OSHIWAMBO</td></tr>
+                <tr><td><code>english</code></td><td>How are you?</td></tr>
+                <tr><td><code>translation</code></td><td>Oshili?</td></tr>
+                <tr><td><code>note</code> (optional)</td><td>Common greeting</td></tr>
+                </tbody>
+            </table>
+            <div class="spacer"></div>
+            <a class="btn outline" th:href="@{/admin/dashboard}">Back to dashboard</a>
+        </div>
+    </div>
+
+    <!-- Result flash message (optional) -->
+    <div class="card" style="margin-top:16px;" th:if="${message != null}">
+        <strong th:text="${message}">Upload complete.</strong>
+    </div>
+</section>
+
+<script>
+    // Minimal drag & drop + enable/disable submit
+    const dz = document.getElementById('dz');
+    const fileInput = document.getElementById('file');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('uploadForm');
+
+    function setFile(f) {
+      if (!f) { fileName.textContent = 'No file selected'; submitBtn.disabled = true; return; }
+      fileName.textContent = f.name + ' (' + Math.round(f.size/1024) + ' KB)';
+      submitBtn.disabled = false;
+    }
+
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drag'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault(); dz.classList.remove('drag');
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) { fileInput.files = e.dataTransfer.files; setFile(f); }
+    });
+
+    dz.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => setFile(fileInput.files[0]));
+
+    form.addEventListener('submit', () => { submitBtn.disabled = true; submitBtn.textContent = 'Uploading…'; });
+</script>
+
+</body>
+</html>

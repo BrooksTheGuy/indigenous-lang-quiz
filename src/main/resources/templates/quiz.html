@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <title>Quiz</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/quiz.css?v=16">
+
+</head>
+<body>
+<input type="hidden" id="quiz-language" th:value="${language}">
+
+<div class="container">
+    <nav class="quiz-nav">
+        <a href="/">Home</a>
+        <a href="/translate">Translate</a>
+        <a href="/quiz" aria-current="page">Quiz</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="linklike">Logout</button>
+        </form>
+    </nav>
+
+    <!-- Language gate -->
+    <div id="langGate" class="lang-card">
+        <h2>Select your language</h2>
+        <p class="hint">We’ll tailor the quiz to the language you pick.</p>
+        <div class="lang-buttons">
+            <button type="button" class="btn--default lang-btn" data-lang="Oshiwambo">Oshiwambo</button>
+            <button type="button" class="btn--default lang-btn" data-lang="Herero">Herero</button>
+            <button type="button" class="btn--default lang-btn" data-lang="Silozi">Silozi</button>
+            <button type="button" class="btn--default lang-btn" data-lang="Rukwangali">Rukwangali</button>
+        </div>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quiz" class="hidden">
+        <header class="quiz-header">
+            <div class="quiz-title">
+                <h1>Awesome Quiz <span id="langBadge" class="badge"></span></h1>
+                <div class="divider"></div>
+            </div>
+            <div class="quiz-progress"><div id="progressBar" class="progress-bar"></div></div>
+        </header>
+
+        <main class="quiz-main">
+            <h2 id="questionText" class="question">Question will appear here</h2>
+            <ul id="choices" class="choices"></ul>
+
+            <div id="feedback" class="alert hidden"></div>
+
+            <div class="actions">
+                <button id="nextBtn" class="btn--primary" disabled>Next</button>
+                <button id="changeLangBtn" class="btn--secondary">Change language</button>
+            </div>
+
+            <footer><p id="progress">Question x of y</p></footer>
+        </main>
+    </div>
+    <!-- /#quiz -->
+
+    <!-- RESULTS (outside of #quiz) -->
+    <section id="results" class="results hidden">
+        <h1>Awesome Quiz <span id="scoreLang" class="badge"></span></h1>
+        <h2>Game Over</h2>
+
+        <!-- Summary/advice card (new) -->
+        <div id="summaryCard" class="summary-card hidden">
+            <div class="grade-pill" id="gradePill">F</div>
+            <div class="summary-text">
+                <p id="summaryMsg">—</p>
+                <p><strong>Time:</strong> <span id="elapsed">00:00</span></p>
+            </div>
+        </div>
+
+        <div class="scorecard">
+            <div class="score-left">
+                <div class="score-circle"><span id="scorePct">0%</span></div>
+            </div>
+            <div class="score-right">
+                <p><strong>Score:</strong> <span id="scoreText">0 / 0</span> — <span class="badge">Result</span></p>
+                <p><strong>Grade:</strong> <span id="grade">—</span></p>
+                <p><strong>Time:</strong> <span id="elapsedDup">00:00</span></p>
+                <button id="retryBtn" class="btn--secondary">Change language</button>
+            </div>
+        </div>
+
+        <div class="highscores">
+            <h3>High scores (local for <span id="hsLang">—</span>)</h3>
+            <table>
+                <thead><tr><th>#</th><th>Score</th><th>%</th><th>Time</th><th>Date</th></tr></thead>
+                <tbody id="highscoresBody"></tbody>
+            </table>
+        </div>
+
+        <div id="review" class="review"></div>
+    </section>
+    <!-- /#results -->
+</div>
+
+<script src="/js/quiz.js?v=15" defer></script>
+<script src="/js/quiz-results.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // mark start if not already done
+      window.quizStart = window.quizStart || Date.now();
+
+      function getLanguage() {
+        return document.querySelector('#quiz-language')?.value
+            || document.querySelector('#languageSelect')?.value
+            || 'OSHIWAMBO';
+      }
+
+      function parseScoreFromDOM() {
+        const txt = document.body.textContent || '';
+        const m = txt.match(/Score[:\s]*([0-9]+)\s*\/\s*([0-9]+)/i);
+        if (m) return { correct: parseInt(m[1], 10), total: parseInt(m[2], 10) };
+        return null;
+      }
+
+      function parseTimeFromDOM() {
+        const txt = document.body.textContent || '';
+        let m = txt.match(/Time[:\s]*([0-9]+):([0-9]{1,2})/i);        // e.g. Time: 0:19
+        if (m) return (parseInt(m[1],10) * 60) + parseInt(m[2],10);
+        m = txt.match(/Time[:\s]*([0-9]+)\s*s/i);                    // e.g. Time: 19s
+        if (m) return parseInt(m[1],10);
+        return Math.round((Date.now() - (window.quizStart || Date.now())) / 1000);
+      }
+
+      async function submitAttempt(correct, total, elapsed) {
+        try {
+          const resp = await submitResults({
+            language: getLanguage(),
+            total, correct, elapsedSeconds: elapsed
+          });
+          console.log('[Quiz] attempt saved:', resp);
+          // window.location = '/quiz/history'; // optional
+        } catch (e) {
+          console.warn('[Quiz] save failed', e);
+        }
+      }
+
+      async function saveAttemptWithRetry(tries = 0) {
+        let correct = (window.score ?? window.correct ?? window.finalCorrect ?? 0);
+        let total   = (window.questions?.length) ?? window.totalQuestions ?? window.numQuestions ?? 0;
+        let elapsed = window.elapsedTimeInSeconds ?? window.timeTakenSeconds ?? parseTimeFromDOM();
+
+        if (!total || total === 0) {
+          const parsed = parseScoreFromDOM();
+          if (parsed) { correct = parsed.correct; total = parsed.total; }
+        }
+
+        if ((!total || total === 0) && tries < 5) {
+          return setTimeout(() => saveAttemptWithRetry(tries + 1), 200);
+        }
+
+        elapsed = Number.isFinite(elapsed) ? elapsed : 0;
+        correct = Number.isFinite(correct) ? correct : 0;
+        total   = Number.isFinite(total)   ? total   : 0;
+
+        await submitAttempt(correct, total, elapsed);
+      }
+
+      // Hook after quiz.js (deferred) has defined finish()
+      const candidates = ['finish', 'finishQuiz', 'showResults', 'endQuiz'];
+      let hooked = false;
+      for (const name of candidates) {
+        if (typeof window[name] === 'function') {
+          const original = window[name];
+          window[name] = function (...args) {
+            const r = original.apply(this, args);
+            saveAttemptWithRetry(0);
+            return r;
+          };
+          console.log('[Quiz] auto-save hooked on', name, '()');
+          hooked = true;
+          break;
+        }
+      }
+
+      if (!hooked) {
+        console.log('[Quiz] no finish fn found; using observer fallback');
+        const obs = new MutationObserver(() => {
+          const hit = Array.from(document.querySelectorAll('h1,h2,.title,.result,.game-over'))
+            .find(el => /game\s*over|result/i.test(el.textContent || ''));
+          if (hit && !window.__attemptSaved) {
+            window.__attemptSaved = true;
+            saveAttemptWithRetry(0);
+            obs.disconnect();
+          }
+        });
+        obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+      }
+    });
+</script>
+
+
+
+</body>
+</html>

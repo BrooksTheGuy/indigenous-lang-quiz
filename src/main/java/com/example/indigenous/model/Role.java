@@ -1,0 +1,1 @@
+package com.example.indigenous.model; public enum Role { USER, ADMIN }

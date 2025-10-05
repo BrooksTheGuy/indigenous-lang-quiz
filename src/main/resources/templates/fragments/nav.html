@@ -1,0 +1,19 @@
+<nav th:fragment="navbar">
+    <ul style="display:flex; gap:16px; list-style:none; padding:12px 16px; margin:0; border-bottom:1px solid #e5e7eb; background:#fff;">
+        <li><a th:href="@{/}">Home</a></li>
+        <li><a th:href="@{/quiz}">Quiz</a></li>
+        <li><a th:href="@{/translate}">Translate</a></li>
+
+        <!-- Admin link only for admins -->
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/dashboard}">Admin</a></li>
+
+        <!-- Auth links -->
+        <li sec:authorize="isAnonymous()"><a th:href="@{/login}">Login</a></li>
+        <li sec:authorize="isAuthenticated()">
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" style="background:none;border:none;color:#2563eb;cursor:pointer;">Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>

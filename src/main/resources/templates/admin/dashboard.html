@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard | Indigenous Languages</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root { --card:#ffffff; --muted:#6b7280; --border:#e5e7eb; --bg:#f8fafc; }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:#0f172a; }
+        .container { max-width:1200px; margin:24px auto 40px; padding:0 16px; }
+        h1 { font-weight:800; margin:12px 0 8px; letter-spacing:.2px; }
+        .muted { color:var(--muted); }
+
+        .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-top:16px; }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; }
+        .stat { display:flex; align-items:center; justify-content:space-between; }
+        .stat .num { font-size:28px; font-weight:800; }
+        .chip { font-size:12px; color:var(--muted); border:1px solid var(--border); border-radius:999px; padding:4px 8px; }
+
+        .table { width:100%; border-collapse:separate; border-spacing:0; }
+        .table th, .table td { text-align:left; padding:12px 14px; border-bottom:1px solid var(--border); }
+        .table th { font-weight:700; color:#111827; background:#f3f4f6; }
+        .table tr:hover td { background:#fafafa; }
+
+        .row { display:flex; gap:16px; margin-top:16px; }
+        .row > .card { flex:1 1 0; }
+
+        .actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#111827; color:#fff; text-decoration:none; }
+        .btn:hover { background:#1f2937; }
+        .btn.outline { background:#fff; color:#111827; }
+
+        @media (max-width: 1000px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media (max-width: 640px)  { .grid { grid-template-columns:1fr; } .row { flex-direction:column; } }
+    </style>
+</head>
+<body>
+
+<!-- Shared navbar -->
+<div th:replace="fragments/nav :: navbar"></div>
+
+<section class="container" sec:authorize="hasRole('ADMIN')">
+    <h1>Admin Dashboard</h1>
+    <p class="muted">Manage content, check activity, and jump to common admin tasks.</p>
+
+    <!-- Top stats -->
+    <div class="grid">
+        <div class="card stat">
+            <div>
+                <div class="muted">Users</div>
+                <div class="num" th:text="${userCount}">—</div>
+            </div>
+            <span class="chip" th:text="${activeAdmins} == null ? 'admins —' : ${activeAdmins} + ' admins'">admins —</span>
+        </div>
+
+        <div class="card stat">
+            <div>
+                <div class="muted">Translations</div>
+                <div class="num" th:text="${translationCount}">—</div>
+            </div>
+            <span class="chip" th:text="${languageCount} == null ? 'languages —' : ${languageCount} + ' languages'">languages —</span>
+        </div>
+
+        <div class="card stat">
+            <div>
+                <div class="muted">Quizzes Taken</div>
+                <div class="num" th:text="${attemptCount}">—</div>
+            </div>
+            <span class="chip" th:text="${avgScore} == null ? 'avg —' : ${avgScore} + '%'">avg —</span>
+        </div>
+
+        <div class="card stat">
+            <div>
+                <div class="muted">Last Upload</div>
+                <div class="num" style="font-size:20px" th:text="${lastUploadAt}">—</div>
+            </div>
+            <span class="chip" th:text="${lastUploadBy} == null ? '' : 'by ' + ${lastUploadBy}"> </span>
+        </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="row">
+        <div class="card">
+            <h3 style="margin:0 0 10px;">Quick actions</h3>
+            <div class="actions">
+                <a class="btn" th:href="@{/admin/upload}">Upload translations</a>
+                <a class="btn outline" th:href="@{/admin/dashboard}">Refresh stats</a>
+                <a class="btn outline" th:href="@{/translate}">Open translator</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin:0 0 10px;">Tips</h3>
+            <ul class="muted" style="margin:0 0 0 18px; line-height:1.6;">
+                <li>Uploads add or update existing translations by key.</li>
+                <li>Keep CSV headers consistent (see Upload page for template).</li>
+                <li>Use Admin &rarr; Upload to bulk edit notes or fix typos.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Recent activity (renders only if provided) -->
+    <div class="card" style="margin-top:16px;" th:if="${recentUploads != null}">
+        <h3 style="margin:0 0 10px;">Recent uploads</h3>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>When</th>
+                <th>By</th>
+                <th>Rows</th>
+                <th>Notes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${recentUploads}">
+                <td th:text="${u.when}">—</td>
+                <td th:text="${u.who}">—</td>
+                <td th:text="${u.rows}">—</td>
+                <td th:text="${u.note}">—</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card muted" style="margin-top:16px;" th:if="${recentUploads == null}">
+        No recent uploads to show yet.
+    </div>
+</section>
+
+</body>
+</html>

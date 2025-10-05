@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Sign in / Sign up</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="/css/auth-codepen.css?v=1">
+</head>
+<body>
+<div class="wrap_bg">
+    <div id="main" th:class="'login_wrap ' + (${mode} == 'signup' ? 'singUpActive' : 'loginActive')">
+        <div class="login_question_wrap">
+
+            <div class="question_singUp">
+                <h2 class="title">Don't have an account?</h2>
+                <p></p>
+                <a href="#" id="signUpBtn" class="btn btn_rounded">Sign up</a>
+            </div>
+
+            <div class="question_login">
+                <h2 class="title">Have an account?</h2>
+                <p></p>
+                <a href="#" id="loginBtn" class="btn btn_rounded">Log in</a>
+            </div>
+
+            <div class="action_singUp">
+                <form th:action="@{/register}" th:object="${form}" method="post" novalidate>
+                    <fieldset>
+                        <legend class="title">Sign Up</legend>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="input_block">
+                            <div class="input_wrap">
+                                <input type="text" id="sing_name" class="input" placeholder="Full Name" autocomplete="name">
+                                <label for="sing_name" class="label_name"></label>
+                            </div>
+                            <div class="input_wrap">
+                                <input type="email" th:field="*{email}" id="sing_email" class="input" placeholder="Email" required autocomplete="email">
+                                <label for="sing_email" class="label_mail"></label>
+                            </div>
+                            <div class="input_wrap">
+                                <input type="password" th:field="*{password}" id="sing_pass" class="input" placeholder="Password" required autocomplete="new-password">
+                                <label for="sing_pass" class="label_pass"></label>
+                            </div>
+                            <div class="input_wrap">
+                                <input type="password" th:field="*{confirmPassword}" id="sing_pass_2" class="input" placeholder="Confirm password" required autocomplete="new-password">
+                                <label for="sing_pass_2" class="label_pass"></label>
+                            </div>
+                            <div class="field-errors" th:if="${#fields.hasErrors('*')}">
+                                <div th:each="e : ${#fields.errors('*')}" class="alert error" th:text="${e}"></div>
+                            </div>
+                        </div>
+                        <input type="submit" value="Sign Up" class="btn btn_red">
+                    </fieldset>
+                </form>
+            </div>
+
+            <div class="action_login">
+                <form th:action="@{/login}" method="post" autocomplete="on">
+                    <fieldset>
+                        <legend class="title">Log in</legend>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="input_block">
+                            <div class="input_wrap">
+                                <input type="email" id="mail" name="email" class="input" placeholder="Email" required autocomplete="email">
+                                <label for="mail" class="label_mail"></label>
+                            </div>
+                            <div class="input_wrap">
+                                <input type="password" id="pass" name="password" class="input" placeholder="Password" required autocomplete="current-password">
+                                <label for="pass" class="label_pass"></label>
+                            </div>
+                        </div>
+
+                        <a href="#" class="forgotPass">Forgot password?</a>
+
+                        <div class="alert success" th:if="${param.registered}">Account created! You can sign in now.</div>
+                        <div class="alert info" th:if="${param.logout}">You have been signed out.</div>
+                        <div class="alert error" th:if="${param.error}">Invalid email or password.</div>
+
+                        <input type="submit" value="Login" class="btn btn_red">
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+
+        <div class="login_action_wrap"></div>
+    </div>
+</div>
+<script src="/js/auth-codepen.js?v=1" defer></script>
+</body>
+</html>
